@@ -720,22 +720,38 @@ void bubbleSortVersion(vector<rtl::Reference<VendorBase> >& vec)
             // valid version
 
             //check if version of current is recognized, by comparing it with itself
+          #ifndef __OBJC__
             try
+          #else
+            @try
+          #endif
             {
                 (void)cur->compareVersions(cur->getVersion());
             }
+          #ifndef __OBJC__
             catch (MalformedVersionException &)
+          #else
+            @catch (...)
+          #endif
             {
                 nCmp = -1; // current < next
             }
             //The version of cur is valid, now compare with the second version
             if (nCmp == 0)
             {
+              #ifndef __OBJC__
                 try
+              #else
+                @try
+              #endif
                 {
                     nCmp = cur->compareVersions(next->getVersion());
                 }
+              #ifndef __OBJC__
                 catch (MalformedVersionException & )
+              #else
+                @catch (...)
+              #endif
                 {
                     //The second version is invalid, therefore it regards less.
                     nCmp = 1;

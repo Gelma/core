@@ -238,12 +238,20 @@ javaPluginError checkJavaVersionRequirements(
 {
     if (!sMinVersion.isEmpty())
     {
+      #ifndef __OBJC__
         try
+      #else
+        @try
+      #endif
         {
             if (aVendorInfo->compareVersions(sMinVersion) < 0)
                 return JFW_PLUGIN_E_FAILED_VERSION;
         }
+      #ifndef __OBJC__
         catch (MalformedVersionException&)
+      #else
+        @catch (...)
+      #endif
         {
             //The minVersion was not recognized as valid for this vendor.
             JFW_ENSURE(
@@ -257,12 +265,20 @@ javaPluginError checkJavaVersionRequirements(
 
     if (!sMaxVersion.isEmpty())
     {
+      #ifndef __OBJC__
         try
+      #else
+        @try
+      #endif
         {
             if (aVendorInfo->compareVersions(sMaxVersion) > 0)
                 return JFW_PLUGIN_E_FAILED_VERSION;
         }
+      #ifndef __OBJC__
         catch (MalformedVersionException&)
+      #else
+        @catch (...)
+      #endif
         {
             //The maxVersion was not recognized as valid for this vendor.
             JFW_ENSURE(
@@ -277,12 +293,20 @@ javaPluginError checkJavaVersionRequirements(
     for (int i = 0; i < nLenList; i++)
     {
         OUString sExVer(arExcludeList[i]);
+      #ifndef __OBJC__
         try
+      #else
+        @try
+      #endif
         {
             if (aVendorInfo->compareVersions(sExVer) == 0)
                 return JFW_PLUGIN_E_FAILED_VERSION;
         }
+      #ifndef __OBJC__
         catch (MalformedVersionException&)
+      #else
+        @catch (...)
+      #endif
         {
             //The excluded version was not recognized as valid for this vendor.
             JFW_ENSURE(
