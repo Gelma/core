@@ -609,7 +609,7 @@ namespace
                 continue;
             }
 
-            // TODO: clarify: anything else to care for? Both the sub componbents with and without model
+            // TODO: clarify: anything else to care for? Both the sub components with and without model
             // should support the XModifiable interface, so I think nothing more is needed here.
             OSL_FAIL( "lcl_hasAnyModifiedSubComponent_throw: anything left to do here?" );
         }
