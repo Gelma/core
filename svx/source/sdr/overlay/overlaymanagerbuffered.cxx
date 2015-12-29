@@ -170,7 +170,7 @@ namespace sdr
                 vcl::Region aPaintRegionPixel = rWindow.LogicToPixel(rWindow.GetPaintRegion());
                 aRegion.Intersect(aPaintRegionPixel);
 
-                // #i72754# Make sure content is completetly rendered, the window
+                // #i72754# Make sure content is completely rendered, the window
                 // will be used as source of a DrawOutDev soon
                 rWindow.Flush();
             }
