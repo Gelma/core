@@ -285,7 +285,7 @@ SAL_DLLPUBLIC void SAL_CALL osl_freeProcessHandle(
         oslProcess Process);
 
 
-/** Wait for completation of the specified childprocess.
+/** Wait for completion of the specified childprocess.
     @param Process [in]
     @return ols_Process_E_None
     @see osl_executeProcess
