@@ -3877,7 +3877,7 @@ bool ScDocument::CompileErrorCells(sal_uInt16 nErrCode)
 void ScDocument::CalcAfterLoad( bool bStartListening )
 {
     if (bIsClip)    // Excel data is loaded from the Clipboard to a Clip-Doc
-        return;     // the calculation is then only perfromed when inserting into the real document
+        return;     // the calculation is then only performed when inserting into the real document
 
     bCalcingAfterLoad = true;
     sc::CompileFormulaContext aCxt(this);
