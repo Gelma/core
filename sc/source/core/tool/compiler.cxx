@@ -1141,7 +1141,7 @@ struct ConventionXL
     static void makeExternalDocStr( OUStringBuffer& rBuffer, const OUString& rFullName, bool bEncodeUrl )
     {
         // Format that is easier to deal with inside OOo, because we use file
-        // URL, and all characetrs are allowed.  Check if it makes sense to do
+        // URL, and all characters are allowed.  Check if it makes sense to do
         // it the way Gnumeric does it.  Gnumeric doesn't use the URL form
         // and allows relative file path.
         //
