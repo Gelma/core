@@ -19,7 +19,7 @@ from .ProcessErrors import ProcessErrors
 from .AbstractErrorHandler import AbstractErrorHandler
 from .WebWizardConst import *
 
-# used to interact error occuring when generating the
+# used to interact error occurring when generating the
 # web-site to the user.
 # This class renders the different errors,
 # replaceing some strings from the resources with
