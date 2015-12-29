@@ -1025,7 +1025,7 @@ namespace
     /** helper to handle the change of RasterOp. It takes care of encapsulating all current
         geometry to the current RasterOp (if changed) and needs to be called on any RasterOp
         change. It will also start a new geometry target to embrace to the new RasterOp if
-        a changuing RasterOp is used. Currently, ROP_XOR and ROP_INVERT are supported using
+        a changing RasterOp is used. Currently, ROP_XOR and ROP_INVERT are supported using
         InvertPrimitive2D, and ROP_0 by using a ModifiedColorPrimitive2D to force to black paint
      */
     void HandleNewRasterOp(
