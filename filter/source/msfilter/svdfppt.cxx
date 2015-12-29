@@ -5791,7 +5791,7 @@ void PPTPortionObj::ApplyTo(  SfxItemSet& rSet, SdrPowerPointImport& rManager, s
             if ( nDestinationInstance == 0xffffffff )
                 mrStyleSheet.mpCharSheet[ mnInstance ]->maCharLevel[ mnDepth ].mnFontColorInStyleSheet = aCol;
         }
-        else if ( nVal & 0x0f000000 )   // this is not a hard attribute, but maybe the page has a different colerscheme,
+        else if ( nVal & 0x0f000000 )   // this is not a hard attribute, but maybe the page has a different colorscheme,
         {                               // so that in this case we must use a hard color attribute
             Color   aCol( rManager.MSO_TEXT_CLR_ToColor( nVal ) );
             Color&  aColorInSheet = mrStyleSheet.mpCharSheet[ mnInstance ]->maCharLevel[ mnDepth ].mnFontColorInStyleSheet;
