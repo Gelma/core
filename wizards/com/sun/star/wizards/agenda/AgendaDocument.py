@@ -60,7 +60,7 @@ Tables contain *only* those pairs.<br/>
 2.b. design is arbitrary.<br/>
 As result the following limitations:<br/>
 No column merge is allowed.<br/>
-One compolsary Heading row.<br/>
+One compulsory Heading row.<br/>
 <br/><br/>
 To let the template be flexible, we use a kind of "detection": we look where
 the items are read the design of each table, reaplying it after writing the
