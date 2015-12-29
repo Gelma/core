@@ -67,7 +67,7 @@ the items are read the design of each table, reaplying it after writing the
 table.self.xTextDocument
 <br/><br/>
 A note about threads:<br/>
-Many methods here are synchronized, in order to avoid colission made by
+Many methods here are synchronized, in order to avoid collision made by
 events fired too often.
 '''
 class AgendaDocument(TextDocument):
