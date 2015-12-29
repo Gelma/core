@@ -567,7 +567,7 @@ struct RulerSelection
 
 struct RulerUnitData
 {
-    MapUnit         eMapUnit;           // MAP_UNIT for calculaion
+    MapUnit         eMapUnit;           // MAP_UNIT for calculation
     long            nTickUnit;          // Unit divider
     double          nTick1;             // Minimal step
     double          nTick2;             // Tick quarter unit
