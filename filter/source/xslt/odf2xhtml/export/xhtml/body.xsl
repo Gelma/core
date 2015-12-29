@@ -859,7 +859,7 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<!-- A XML node other than text or element (e.g. commment) should not stop the recursion  -->
+	<!-- A XML node other than text or element (e.g. comment) should not stop the recursion  -->
 	<xsl:template match="comment()" mode="frameFloating">
 		<xsl:param name="globalData"/>
 		<xsl:param name="previousFrameWidths" select="0"/>
